@@ -1,48 +1,67 @@
 # lazy-nvm.plugin.zsh
 # author: Seong Yong-ju <sei40kr@gmail.com>
 
-__should_load_nvm() {
-    local dir="$PWD"
-
-    if [[ "$dir" == / ]]; then
-        dir=''
-    fi
-
-    while true; do
-        if [[ -f "${dir}/.nvmrc" ]]; then
-            return 0
-        fi
-
-        if [[ "$dir" == '' ]]; then
-            return 1
-        fi
-
-        dir="${dir%/*}"
-    done
-}
+__nvm_loaded=false
 
 __load_nvm() {
+    unhash -f nvm_find_nvmrc
+    unhash -f nvm
+
+    __nvm_loaded=true
     . "${NVM_DIR:-${HOME}/.nvm}/nvm.sh"
 }
 
-__load_nvm_if_should() {
-    if __should_load_nvm; then
-        unhash -f nvm
-        __load_nvm
-        chpwd_functions=( "${chpwd_functions[@]:#__load_nvm_if_should}" )
+nvm_find_nvmrc() {
+    local dir="$PWD"
+
+    while [[ "$dir" != '' && ! -f "${dir}/.nvmrc" ]]; do
+        dir="${dir%/*}"
+    done
+
+    echo "${dir:+${dir}/.nvmrc}"
+}
+
+nvm() {
+    __load_nvm
+
+    nvm "$@"
+}
+
+__lazy_nvm_chpwd() {
+    local nvmrc_path="$(nvm_find_nvmrc)"
+
+    if [[ "$__nvm_loaded" != true ]]; then
+        if [[ -n "$nvmrc_path" ]]; then
+            __load_nvm
+        else
+            return
+        fi
+    fi
+
+    if [[ -n "$nvmrc_path" ]]; then
+        local node_version="$(nvm version)"
+        local nvmrc_node_version="$(nvm version "$(cat "$nvmrc_path")")"
+
+        if [[ "$nvmrc_node_version" == 'N/A' ]]; then
+            if [[ "$LAZY_NVM_AUTO_INSTALL" == true ]]; then
+                nvm install
+            fi
+        elif [[ "$nvmrc_node_version" != "$node_version" ]]; then
+            if [[ "$LAZY_NVM_SILENT_USE" == true ]]; then
+                nvm use --silent
+            else
+                nvm use
+            fi
+        fi
+    elif [[ "$node_version" != "$(nvm version default)" ]]; then
+        if [[ "$LAZY_NVM_SILENT_USE" != true ]]; then
+            echo "Reverting to nvm default version"
+        fi
+
+        nvm use default
     fi
 }
 
-if __should_load_nvm; then
-    __load_nvm
-else
-    nvm() {
-        unhash -f nvm
-        __load_nvm
-        chpwd_functions=( "${chpwd_functions[@]:#__load_nvm_if_should}" )
+chpwd_functions+=( __lazy_nvm_chpwd )
 
-        nvm "$@"
-    }
-
-    chpwd_functions+=( __load_nvm_if_should )
-fi
+__lazy_nvm_chpwd
