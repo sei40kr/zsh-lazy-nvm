@@ -9,10 +9,10 @@ Load nvm lazily with auto use support!
 
 ## Install
 
-### Install with [zplugin](https://github.com/zdharma/zplugin) (recommended)
+### Install with [zinit](https://github.com/zdharma/zinit) (recommended)
 
 ```sh
-zplugin light sei40kr/zsh-lazy-nvm
+zinit light sei40kr/zsh-lazy-nvm
 ```
 
 ### Install with [zplug](https://github.com/zplug/zplug)
