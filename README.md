@@ -1,6 +1,6 @@
 # zsh-lazy-nvm
 
-Load nvm lazily with auto use support!
+Lazy nvm loading with auto use support!
 
 ## Requirements
 
@@ -24,10 +24,10 @@ zplug sei40kr/zsh-lazy-nvm
 ## Customization
 
 | Variable                | Default Value | Description                                                                                                           |
-| :--                     | :--           | :--                                                                                                                   |
+| :---------------------- | :------------ | :-------------------------------------------------------------------------------------------------------------------- |
 | `LAZY_NVM_SILENT_USE`   | `false`       | Whether to use `--silent` option for `nvm use`. If `true`, it also keeps silence on reverting to nvm default version. |
 | `LAZY_NVM_AUTO_INSTALL` | `false`       | Whether to install the local version if it is not already installed.                                                  |
 
-## Special Thanks
+## Similar Projects
 
 - [zsh-nvm](https://github.com/lukechilds/zsh-nvm)
